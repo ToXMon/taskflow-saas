@@ -1,3 +1,4 @@
+---
 # TaskFlow SaaS — Akash Network SDL
 #
 # Deploy: provider-services tx deployment create deploy.yaml --from <key>
@@ -15,14 +16,12 @@ services:
       - "DATABASE_URL=sqlite+aiosqlite:///./data/taskflow.db"
     expose:
       - port: 8000
-        as: 8000
         to:
           - service: frontend
     params:
       storage:
         backend-data:
           mount: /app/data
-          readOnly: false
 
   frontend:
     image: wijnaldum/taskflow-frontend:1.0.0
