@@ -33,8 +33,6 @@ services:
         as: 80
         to:
           - global: true
-    depends_on:
-      - backend
 
 profiles:
   compute:
