@@ -1,0 +1,85 @@
+# TaskFlow SaaS — Akash Network SDL
+#
+# Deploy: provider-services tx deployment create deploy.yaml --from <key>
+#
+# Images auto-built by GitHub Actions on push to main.
+# See .github/workflows/docker-build.yml
+
+version: "2.0"
+
+services:
+  backend:
+    image: wijnaldum/taskflow-backend:1.0.0
+    env:
+      - "SECRET_KEY=CHANGE-ME-TO-A-STRONG-RANDOM-STRING-64-CHARS"
+      - "DATABASE_URL=sqlite+aiosqlite:///./data/taskflow.db"
+    expose:
+      - port: 8000
+        as: 8000
+        to:
+          - service: frontend
+    params:
+      storage:
+        backend-data:
+          mount: /app/data
+          readOnly: false
+
+  frontend:
+    image: wijnaldum/taskflow-frontend:1.0.0
+    env:
+      - "BACKEND_URL=http://backend:8000"
+    expose:
+      - port: 3000
+        as: 80
+        to:
+          - global: true
+    depends_on:
+      - backend
+
+profiles:
+  compute:
+    backend:
+      resources:
+        cpu:
+          units: 0.5
+        memory:
+          size: 512Mi
+        storage:
+          - name: default
+            size: 1Gi
+          - name: backend-data
+            size: 5Gi
+            attributes:
+              persistent: true
+              class: beta2
+
+    frontend:
+      resources:
+        cpu:
+          units: 0.5
+        memory:
+          size: 512Mi
+        storage:
+          - name: default
+            size: 1Gi
+
+  placement:
+    dcloud:
+      pricing:
+        backend:
+          denom: uact
+          amount: 1000
+        frontend:
+          denom: uact
+          amount: 1000
+
+deployment:
+  backend:
+    dcloud:
+      profile: backend
+      count: 1
+
+  frontend:
+    dcloud:
+      profile: frontend
+      count: 1
